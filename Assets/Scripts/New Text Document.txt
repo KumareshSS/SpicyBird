@@ -1,0 +1,68 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class FrogController : MonoBehaviour
+{
+    Rigidbody2D rd;
+    public float Force;
+    public GameObject frog;
+    //public Transform leafs;
+    public bool LeafPlatformCheck;
+    public GameObject LeafPaddles;
+    public Transform[] SpawnLeafPos;
+    private float RotationSpeed = 3f; // Rotation speed of the leaf
+    private float JumpForce = 10f; // Jump force of the frog
+
+    void Start()
+    {
+        rd = GetComponent<Rigidbody2D>();
+        SpawnnerLeafs();
+    }
+
+    void Update()
+    {
+        FrogJumpy();
+    }
+
+    public void FrogJumpy()
+    {
+        if (LeafPlatformCheck)
+        {
+            // Rotate the leaf
+            Vector3 rotation = new Vector3(0f, 0f, RotationSpeed * Time.deltaTime);
+            frog.transform.GetChild(0).Rotate(rotation);
+
+            // Get the direction of the leaf
+            Vector2 direction = frog.transform.GetChild(0).up;
+
+            // Apply a jump force in the direction of the leaf when the user clicks the mouse
+            if (Input.GetMouseButtonDown(0))
+            {
+                rd.AddForce(direction * JumpForce, ForceMode2D.Impulse);
+            }
+
+            // Set the parent of the frog to the leaf
+            frog.transform.SetParent(frog.transform.GetChild(0).transform);
+        }
+        else
+        {
+            // Set the parent of the frog to null
+            frog.transform.SetParent(null);
+        }
+    }
+
+    public void SpawnnerLeafs()
+    {
+        Vector3 spawnLeaf = SpawnLeafPos[Random.Range(0, SpawnLeafPos.Length)].position;
+        Instantiate(LeafPaddles, spawnLeaf, Quaternion.identity);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("Leaf"))
+        {
+            LeafPlatformCheck = true;
+        }
+    }
+}
